@@ -1,0 +1,214 @@
+* {
+  box-sizing: border-box;
+}
+
+#calculator {
+  width: 470px;
+  margin: auto;
+}
+
+#button-container {
+  display: grid;
+  grid-template-areas:
+    "adv-calc-keys    basic-calc-keys"
+    "history          basic-calc-keys";
+    grid-template-rows: 80% 20%;
+    grid-template-columns: 1fr 1fr;
+}
+
+#basic-calc-keys {
+  grid-area: basic-calc-keys;
+  height: 300px;
+  display: grid;
+  grid-template-areas:
+    "l-bracket   r-bracket   clear     clear-ele"
+    "seven       eight       nine      divide"
+    "four        five        six       multiply"
+    "one         two         three     subtract"
+    "zero        decimal     equals    add";
+  grid-template-rows: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
+}
+
+#adv-calc-keys {
+  grid-area: adv-calc-keys;
+  height: 300px;
+  display: grid;
+  grid-template-areas:
+    "radDeg      radDeg      factorial   sqrt"
+    "pi          log         ln        exponent"
+    "e           sin         cos       tan"
+    "ans         exp         inv       mod"
+    ".           .           .         .";
+    grid-template-rows: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+}
+
+#display {
+  display: flex;
+  flex-direction: column;
+  height: 80px;
+  border: 1px solid black;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#top-display {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 30%;
+}
+
+#bottom-display {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 70%;
+  font-size: 2rem;
+}
+
+.guide-parenthesis {
+  color: grey;
+}
+
+#l-bracket {
+  grid-area: l-bracket;
+}
+
+#r-bracket {
+  grid-area: r-bracket;
+}
+
+#mod {
+  grid-area: mod;
+}
+
+#clear {
+  grid-area: clear;
+}
+
+#clear-ele {
+  grid-area: clear-ele;
+}
+
+#nine {
+  grid-area: nine;
+}
+
+#eight {
+  grid-area: eight;
+}
+
+#seven {
+  grid-area: seven;
+}
+
+#six {
+  grid-area: six;
+}
+
+#five {
+  grid-area: five;
+}
+
+#four {
+  grid-area: four;
+}
+
+#three {
+  grid-area: three;
+}
+
+#two {
+  grid-area: two;
+}
+
+#one {
+  grid-area: one;
+}
+
+#zero {
+  grid-area: zero;
+}
+
+#equals {
+  grid-area: equals;
+}
+
+#divide {
+  grid-area: divide;
+}
+
+#multiply {
+  grid-area: multiply;
+}
+
+#subtract {
+  grid-area: subtract;
+}
+
+#add {
+  grid-area: add;
+}
+
+#radDeg {
+  grid-area: radDeg;
+}
+
+#factorial {
+  grid-area: factorial;
+}
+
+#sqrt {
+  grid-area: sqrt;
+}
+
+#pi {
+  grid-area: pi;
+}
+
+#log {
+  grid-area: log;
+}
+
+#ln {
+  grid-area: ln;
+}
+
+#exponent {
+  grid-area: exponent;
+}
+
+#e {
+  grid-area: e;
+}
+
+#sin {
+  grid-area: sin;
+}
+
+#cos {
+  grid-area: cos;
+}
+
+#tan { 
+  grid-area: tan;
+}
+
+
+#ans {
+  grid-area: ans;
+}
+
+#exp {
+  grid-area: exp;
+}
+
+#inv {
+  grid-area: inv;
+}
+
+#mod {
+  grid-area: mod;
+}
