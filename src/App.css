@@ -5,20 +5,23 @@
 #calculator {
   width: 470px;
   margin: auto;
+  border: 1px solid grey;
+  padding: 10px;
+  border-radius: 5px;
 }
 
 #button-container {
   display: grid;
+  height: 300px;
   grid-template-areas:
     "adv-calc-keys    basic-calc-keys"
     "history          basic-calc-keys";
-    grid-template-rows: 80% 20%;
-    grid-template-columns: 1fr 1fr;
+  grid-template-rows: 80% 20%;
+  grid-template-columns: 1fr 1fr;
 }
 
 #basic-calc-keys {
   grid-area: basic-calc-keys;
-  height: 300px;
   display: grid;
   grid-template-areas:
     "l-bracket   r-bracket   clear     clear-ele"
@@ -32,16 +35,51 @@
 
 #adv-calc-keys {
   grid-area: adv-calc-keys;
-  height: 300px;
   display: grid;
   grid-template-areas:
     "radDeg      radDeg      factorial   sqrt"
     "pi          log         ln        exponent"
     "e           sin         cos       tan"
-    "ans         exp         inv       mod"
-    ".           .           .         .";
-    grid-template-rows: repeat(5, 1fr);
-    grid-template-columns: repeat(4, 1fr);
+    "ans         exp         inv       mod";
+  grid-template-rows: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr);
+}
+
+#history-button-area {
+  grid-area: history;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+#history {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  width: 500px;
+  height: 250px;
+  border: 1px solid black;
+  border-radius: 5px;
+  position: absolute;
+  top: -240px;
+  left: -30px;
+  background-color: white;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.history-item p {
+  color: black;
+}
+
+.history-item p:hover {
+  color: blue;
+  cursor: pointer;
 }
 
 #display {
@@ -51,6 +89,8 @@
   border: 1px solid black;
   overflow: hidden;
   white-space: nowrap;
+  margin-bottom: 10px;
+  border-radius: 5px;
 }
 
 #top-display {
@@ -192,10 +232,9 @@
   grid-area: cos;
 }
 
-#tan { 
+#tan {
   grid-area: tan;
 }
-
 
 #ans {
   grid-area: ans;

@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import {evaluate} from "mathjs";
+import { evaluate } from "mathjs";
 
 const BASIC_BUTTONS = [
   {
@@ -201,11 +201,15 @@ class Calculator extends React.Component {
       equation: [],
       answer: "",
       prevEquation: [],
-      showingAnswer: false
+      showingAnswer: false,
+      history: [],
+      historyIsVisible: false
     };
 
     this.handleButtonPress = this.handleButtonPress.bind(this);
-    this.checkOpenParenthesis = this.checkOpenParenthesis.bind(this);
+    this.toggleHistory = this.toggleHistory.bind(this);
+    this.setAnswerFromHistory = this.setAnswerFromHistory.bind(this);
+    this.setEquationFromHistory = this.setEquationFromHistory.bind(this);
   }
 
   handleButtonPress(event) {
@@ -232,7 +236,11 @@ class Calculator extends React.Component {
           answer: ans.toString(),
           prevEquation: this.state.equation,
           equation: [],
-          showingAnswer: true
+          showingAnswer: true,
+          history: this.state.history.concat({
+            equation: this.state.equation,
+            answer: ans.toString()
+          })
         };
         break;
       case "clear-ele":
@@ -405,7 +413,8 @@ class Calculator extends React.Component {
   checkOpenParenthesis(str) {
     var stack = [];
     for (var i = 0; i < str.length; i++) {
-      if (str[i] === "(" || str[i] === "{" || str[i] === "[") stack.push(str[i]);
+      if (str[i] === "(" || str[i] === "{" || str[i] === "[")
+        stack.push(str[i]);
       else if (str[i] === ")") {
         if (stack.pop() !== "(") {
           return false;
@@ -424,8 +433,33 @@ class Calculator extends React.Component {
     return stack.length;
   }
 
+  toggleHistory() {
+    this.setState({ historyIsVisible: !this.state.historyIsVisible });
+  }
+
+  setEquationFromHistory(event) {
+    const index = event.target.parentElement.id;
+    this.setState({ 
+      equation: this.state.history[index].equation,
+      showingAnswer: false,
+      answer: ""
+    });
+  }
+
+  setAnswerFromHistory(event) {
+    const index = event.target.parentElement.id;
+    const equationLastChar = this.state.equation.join("").slice(-1);
+    let addToEquation = this.state.history[index].answer;
+    if(equationLastChar !== "(" && this.state.equation.length > 0)
+      addToEquation = "*" + addToEquation;
+    this.setState({
+      equation: this.state.equation.concat(addToEquation),
+      showingAnswer: false,
+      answer: ""
+    });
+  }
+
   render() {
-    console.log(this.state.equation.join(""));
     return (
       <div id="calculator">
         <Display
@@ -435,11 +469,38 @@ class Calculator extends React.Component {
           showAnswer={this.state.showingAnswer}
         />
         <div id="button-container">
-          <CalcKeys id='adv-calc-keys' keysArray={ADV_BUTTONS} onClick={this.handleButtonPress} />
-          <CalcKeys id='basic-calc-keys'
+          <CalcKeys
+            id="adv-calc-keys"
+            keysArray={ADV_BUTTONS}
+            onClick={this.handleButtonPress}
+          />
+          <CalcKeys
+            id="basic-calc-keys"
             keysArray={BASIC_BUTTONS}
             onClick={this.handleButtonPress}
           />
+          <div id="history-button-area">
+            {this.state.historyIsVisible && 
+              <div id="history">
+                {this.state.history.map((ele, index) => {
+                  const visibleEquationLength = 30;
+                  let equationStr = ele.equation.join("");
+                  if(equationStr.length > visibleEquationLength)
+                    equationStr = equationStr.slice(0,visibleEquationLength) + "...";
+                  return (
+                    <div className="history-item" id={index}>
+                      {equationStr.length > visibleEquationLength ?
+                        <p title={ele.equation.join("")} onClick={this.setEquationFromHistory}>{equationStr}</p> :
+                        <p onClick={this.setEquationFromHistory}>{equationStr}</p>
+                      }
+                        <p onClick={this.setAnswerFromHistory}>{"=" + ele.answer}</p>
+                    </div>
+                  );
+                })}
+                </div>
+              }
+            <button onClick={this.toggleHistory}>History</button>
+          </div>
         </div>
       </div>
     );
@@ -450,7 +511,11 @@ class CalcKeys extends React.Component {
   render() {
     let buttons = this.props.keysArray.map(button => {
       return (
-        <button className="calc-button" id={button.id} onClick={this.props.onClick}>
+        <button
+          className="calc-button"
+          id={button.id}
+          onClick={this.props.onClick}
+        >
           {button.button}
         </button>
       );
