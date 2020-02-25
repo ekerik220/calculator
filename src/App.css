@@ -16,7 +16,7 @@
   grid-template-areas:
     "adv-calc-keys    basic-calc-keys"
     "history          basic-calc-keys";
-  grid-template-rows: 80% 20%;
+  grid-template-rows: 60% 40%;
   grid-template-columns: 1fr 1fr;
 }
 
@@ -37,11 +37,10 @@
   grid-area: adv-calc-keys;
   display: grid;
   grid-template-areas:
-    "radDeg      radDeg      factorial   sqrt"
+    "ans        mod      factorial   sqrt"
     "pi          log         ln        exponent"
-    "e           sin         cos       tan"
-    "ans         exp         inv       mod";
-  grid-template-rows: repeat(4, 1fr);
+    "e           sin         cos       tan";
+  grid-template-rows: repeat(3, 1fr);
   grid-template-columns: repeat(4, 1fr);
 }
 
@@ -192,10 +191,6 @@
   grid-area: add;
 }
 
-#radDeg {
-  grid-area: radDeg;
-}
-
 #factorial {
   grid-area: factorial;
 }
@@ -224,28 +219,20 @@
   grid-area: e;
 }
 
-#sin {
+#sin, #asin {
   grid-area: sin;
 }
 
-#cos {
+#cos, #acos {
   grid-area: cos;
 }
 
-#tan {
+#tan, #atan {
   grid-area: tan;
 }
 
 #ans {
   grid-area: ans;
-}
-
-#exp {
-  grid-area: exp;
-}
-
-#inv {
-  grid-area: inv;
 }
 
 #mod {

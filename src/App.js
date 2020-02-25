@@ -136,11 +136,6 @@ const ADV_BUTTONS = [
     format: "^"
   },
   {
-    button: "Rad | Deg",
-    id: "radDeg",
-    format: null
-  },
-  {
     button: "sin",
     id: "sin",
     format: "sin("
@@ -156,16 +151,6 @@ const ADV_BUTTONS = [
     format: "tan("
   },
   {
-    button: "EXP",
-    id: "exp",
-    format: "E"
-  },
-  {
-    button: "Inv",
-    id: "inv",
-    format: null
-  },
-  {
     button: "π",
     id: "pi",
     format: "pi"
@@ -178,9 +163,44 @@ const ADV_BUTTONS = [
   {
     button: "Ans",
     id: "ans",
-    format: null
+    format: "Ans"
   }
 ];
+const EVENT_KEY_MAP = new Map([
+  ['0', 'zero'],
+  ['1', 'one'],
+  ['2', 'two'],
+  ['3', 'three'],
+  ['4', 'four'],
+  ['5', 'five'],
+  ['6', 'six'],
+  ['7', 'seven'],
+  ['8', 'eight'],
+  ['9', 'nine'],
+  ['(', 'l-bracket'],
+  [')', 'r-bracket'],
+  ['=', 'equals'],
+  ['Enter', 'equals'],
+  ['Backspace', 'clear-ele'],
+  ['Delete', 'clear'],
+  ['+', 'add'],
+  ['-', 'subtract'],
+  ['*', 'multiply'],
+  ['/', 'divide'],
+  ['%', 'mod'],
+  ['.', 'decimal'],
+  ['p', 'pi'],
+  ['e', 'e'],
+  ['q', 'sqrt'],
+  ['l', 'ln'],
+  ['g', 'log'],
+  ['c', 'cos'],
+  ['s', 'sin'],
+  ['t', 'tan'],
+  ['a', 'ans'],
+  ['!', 'factorial'],
+  ['^', 'exponent']
+]);
 const DECIMAL_PLACES = 10;
 
 class App extends React.Component {
@@ -210,38 +230,82 @@ class Calculator extends React.Component {
     this.toggleHistory = this.toggleHistory.bind(this);
     this.setAnswerFromHistory = this.setAnswerFromHistory.bind(this);
     this.setEquationFromHistory = this.setEquationFromHistory.bind(this);
+    this.handleInput = this.handleInput.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+  }
+
+  componentDidMount() {
+    document.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  handleKeyDown(event) {
+    const inputID = EVENT_KEY_MAP.get(event.key);
+
+    if(inputID) {
+      event.preventDefault();
+      this.handleInput(inputID);
+    }
   }
 
   handleButtonPress(event) {
-    let id = event.target.id;
-    let format = [...BASIC_BUTTONS, ...ADV_BUTTONS].find(obj => obj.id === id)
+    this.handleInput(event.target.id);
+  }
+
+  handleInput(inputID) {
+    let format = [...BASIC_BUTTONS, ...ADV_BUTTONS].find(obj => obj.id === inputID)
       .format;
-    let equationString = this.state.equation.join("");
     let updateState = {};
+    let equationString = this.state.equation.join("");
 
-    switch (id) {
+    switch (inputID) {
       case "equals":
-        // Add closing bracket for any open brackets and evaluate the equation.
-        let ans = evaluate(
-          equationString + ")".repeat(this.checkOpenParenthesis(equationString))
-        );
-        // if ans is exponential format -> reconvert it with decimal places limited
-        // else -> limit decimal places normally
-        if (/e\+/.test(ans)) ans = ans.toExponential(DECIMAL_PLACES);
-        else ans = parseFloat(ans.toFixed(DECIMAL_PLACES));
+        if (!/[*%(/+-]$/.test(equationString)) {
+          let evaluationString = equationString
+            .replace(/\(*$/, "")
+            .replace(/Ans/g, this.state.answer);
 
-        // Update answer state, toggle the showingAnswer bool to true,
-        // move the equation to prevEquation, and reset the equation string.
-        updateState = {
-          answer: ans.toString(),
-          prevEquation: this.state.equation,
-          equation: [],
-          showingAnswer: true,
-          history: this.state.history.concat({
-            equation: this.state.equation,
-            answer: ans.toString()
-          })
-        };
+          evaluationString += ")".repeat(
+            this.checkOpenParenthesis(evaluationString)
+          );
+
+          if (evaluationString.length > 0) {
+            let ans = evaluate(evaluationString);
+
+            // if evaluate failed...
+            if (isNaN(ans)) {
+              updateState = {
+                answer: "error",
+                showingAnswer: true,
+                prevEquation: this.state.equation,
+                equation: []
+              };
+            } else {
+              // if ans is exponential format -> reconvert it with decimal places limited
+              // else -> limit decimal places normally
+              if (/e\+/.test(ans)) ans = ans.toExponential(DECIMAL_PLACES);
+              else ans = parseFloat(ans.toFixed(DECIMAL_PLACES));
+              // Update answer state, toggle the showingAnswer bool to true,
+              // move the equation to prevEquation, and reset the equation string.
+              const equationWithRealAns = this.state.equation.map(ele =>
+                ele === "Ans" ? this.state.answer : ele
+              );
+              updateState = {
+                answer: ans.toString(),
+                prevEquation: equationWithRealAns,
+                equation: [],
+                showingAnswer: true,
+                history: this.state.history.concat({
+                  equation: equationWithRealAns,
+                  answer: ans.toString()
+                })
+              };
+            }
+          }
+        }
         break;
       case "clear-ele":
         // Remove last element from equation array
@@ -263,10 +327,10 @@ class Calculator extends React.Component {
           };
         break;
       case "r-bracket":
-        // Only insert if there are any open parenthesis, and the preceding character is a number or another ).
+        // Only insert if there are any open parenthesis, and the preceding character is a number or a bracket.
         if (
           this.checkOpenParenthesis(equationString) &&
-          /\d|\)$/.test(equationString)
+          /[\d)]$|(Ans|e|pi)$/.test(equationString)
         )
           updateState = { equation: this.state.equation.concat(format) };
         break;
@@ -274,7 +338,7 @@ class Calculator extends React.Component {
       case "multiply":
       case "add":
       case "mod":
-        if (!/[*/+%]-$/.test(equationString)) {
+        if (!/[*/+%]-$|\($|\(-$|\^$/.test(equationString)) {
           // If previous character is a function symbol already change simply swap it with
           // the inputted function symbol.
           if (/(\*|\+|-|\/|%)$/.test(equationString))
@@ -299,8 +363,8 @@ class Calculator extends React.Component {
         }
         break;
       case "subtract":
-        // Don't allow input if previous char is '-'.
-        if (!/-$/.test(equationString))
+        // Don't allow input if previous char is '-' or % (no negative number mod with this calc).
+        if (!/[-%]$/.test(equationString))
           if (this.state.showingAnswer)
             updateState = {
               equation: [this.state.answer, format],
@@ -313,6 +377,11 @@ class Calculator extends React.Component {
               equation: this.state.equation.slice(0, -1).concat(format),
               showingAnswer: false
             };
+          else if (this.state.showingAnswer)
+            updateState = {
+              equation: [this.state.answer, format],
+              showingAnswer: false
+            };
           else
             updateState = {
               equation: this.state.equation.concat(format),
@@ -323,7 +392,7 @@ class Calculator extends React.Component {
         // If either of these situations exist in the equation, don't allow another exponent:
         // 1: A ^ is present followed by brackets that don't close
         // 2: A ^ is present followed by numbers straight to the end of the string
-        if (!/\^$/.test(equationString)) {
+        if (!/\^$|\($|[*%/+-.]$/.test(equationString)) {
           // If equation is empty, add 0 and exponent and then break, we're done.
           if (this.state.equation.length === 0) {
             updateState = {
@@ -332,7 +401,6 @@ class Calculator extends React.Component {
             };
             break;
           }
-
           // Make sure we're not currently typing in an exponent... if we are, don't allow another
           // exponent input (this calculator won't handle exponents of exponents).
           let brackets = false;
@@ -364,7 +432,11 @@ class Calculator extends React.Component {
             }
             // If it's a non-bracket exponent we just have to look out for the next
             // non number... at that point the exponent ended.
-            else if (expFound && isNaN(this.state.equation[i])) {
+            else if (
+              expFound &&
+              isNaN(this.state.equation[i]) &&
+              !/Ans|e|pi/.test(this.state.equation[i])
+            ) {
               expEnded = true;
               expFound = false;
             }
@@ -378,8 +450,29 @@ class Calculator extends React.Component {
             };
         }
         break;
+      case "factorial":
+        if (/[)\d]$|(Ans|e|pi)$/.test(equationString))
+          updateState = {
+            equation: this.state.equation.concat(format),
+            showingAnswer: false
+          };
+        break;
+      case "ans":
+        if (this.state.answer !== "" && this.state.answer !== "error") {
+          if (/[)\d]$|(Ans|e|pi)$/.test(equationString))
+            updateState = {
+              equation: this.state.equation.concat(["*", format]),
+              showingAnswer: false
+            };
+          // Don't allow Ans following % if Ans is negative!
+          else if (!(/%$/.test(equationString) && this.state.answer[0] === "-"))
+            updateState = {
+              equation: this.state.equation.concat(format),
+              showingAnswer: false
+            };
+        }
+        break;
       default:
-        // Handles number keys or keys that don't have special conditions.
         // If last digit is 0 and the preceding element isn't a number or '.', change
         // the 0 to our input because we don't want to have leading 0s on a number.
         if (
@@ -399,17 +492,26 @@ class Calculator extends React.Component {
             equation: this.state.equation.concat(["*", format]),
             showingAnswer: false
           };
-        else
+        else if (
+          this.state.equation[this.state.equation.length - 1] === "e" ||
+          this.state.equation[this.state.equation.length - 1] === "Ans" ||
+          this.state.equation[this.state.equation.length - 1] === "pi"
+        ) {
+          updateState = {
+            equation: this.state.equation.concat(["*", format]),
+            showingAnswer: false
+          };
+        } else
           updateState = {
             equation: this.state.equation.concat(format),
             showingAnswer: false
           };
         break;
     }
-
     this.setState(updateState);
   }
-
+  
+  // Calculate number of open parenthesis
   checkOpenParenthesis(str) {
     var stack = [];
     for (var i = 0; i < str.length; i++) {
@@ -429,7 +531,6 @@ class Calculator extends React.Component {
         }
       }
     }
-
     return stack.length;
   }
 
@@ -439,7 +540,7 @@ class Calculator extends React.Component {
 
   setEquationFromHistory(event) {
     const index = event.target.parentElement.id;
-    this.setState({ 
+    this.setState({
       equation: this.state.history[index].equation,
       showingAnswer: false,
       answer: ""
@@ -450,7 +551,7 @@ class Calculator extends React.Component {
     const index = event.target.parentElement.id;
     const equationLastChar = this.state.equation.join("").slice(-1);
     let addToEquation = this.state.history[index].answer;
-    if(equationLastChar !== "(" && this.state.equation.length > 0)
+    if (equationLastChar !== "(" && this.state.equation.length > 0)
       addToEquation = "*" + addToEquation;
     this.setState({
       equation: this.state.equation.concat(addToEquation),
@@ -480,25 +581,36 @@ class Calculator extends React.Component {
             onClick={this.handleButtonPress}
           />
           <div id="history-button-area">
-            {this.state.historyIsVisible && 
+            {this.state.historyIsVisible && (
               <div id="history">
                 {this.state.history.map((ele, index) => {
                   const visibleEquationLength = 30;
                   let equationStr = ele.equation.join("");
-                  if(equationStr.length > visibleEquationLength)
-                    equationStr = equationStr.slice(0,visibleEquationLength) + "...";
+                  if (equationStr.length > visibleEquationLength)
+                    equationStr =
+                      equationStr.slice(0, visibleEquationLength) + "...";
                   return (
-                    <div className="history-item" id={index}>
-                      {equationStr.length > visibleEquationLength ?
-                        <p title={ele.equation.join("")} onClick={this.setEquationFromHistory}>{equationStr}</p> :
-                        <p onClick={this.setEquationFromHistory}>{equationStr}</p>
-                      }
-                        <p onClick={this.setAnswerFromHistory}>{"=" + ele.answer}</p>
+                    <div className="history-item" id={index} key={index}>
+                      {equationStr.length > visibleEquationLength ? (
+                        <p
+                          title={ele.equation.join("")}
+                          onClick={this.setEquationFromHistory}
+                        >
+                          {equationStr}
+                        </p>
+                      ) : (
+                        <p onClick={this.setEquationFromHistory}>
+                          {equationStr}
+                        </p>
+                      )}
+                      <p onClick={this.setAnswerFromHistory}>
+                        {"=" + ele.answer}
+                      </p>
                     </div>
                   );
                 })}
-                </div>
-              }
+              </div>
+            )}
             <button onClick={this.toggleHistory}>History</button>
           </div>
         </div>
@@ -514,6 +626,7 @@ class CalcKeys extends React.Component {
         <button
           className="calc-button"
           id={button.id}
+          key={button.id}
           onClick={this.props.onClick}
         >
           {button.button}
@@ -542,13 +655,17 @@ class Display extends React.Component {
       .replace(/^\s-\s/g, "-") // '^ - ' -> '-'
       .replace(/\(\s-\s/g, "(-") // '( - ' -> '(-'
       .replace(/%/g, " % ")
-      .replace(/\D\.|^\./g, " 0.") // (.21 -> 0.21)
+      .replace(/-\D\.|^-\./g, " -0.") // (-.21 -> -0.21)
+      .replace(/(\D)\.|^\./g, " $10.") // (.21 -> 0.21)
       .replace(/\)(?=\d)/g, ") × ") // (8)6 -> (8) * 6
-      .replace(/\^([\d]+)/g, "<sup>$1</sup>")
+      .replace(/\^\s-\s(\d+\.?\d*|Ans|e|pi)?/g, "<sup>-$1</sup>")
+      .replace(/\^(\d+\.?\d*|Ans|e|pi)/g, "<sup>$1</sup>")
       .replace(/\^$/, "<sup>□</sup>")
       .replace(/log\(/g, "ln(")
       .replace(/log10\(/g, "log(")
-      .replace(/sqrt/g, "√");
+      .replace(/sqrt/g, "√")
+      .replace(/pi/g, "π")
+      .replace(/e/g, "<i>e</i>");
 
     // -- FORMAT BRACKET STYLE EXPONENTS (SUPERSCRIPTS) --
     let start = 0;
@@ -558,9 +675,8 @@ class Display extends React.Component {
     for (let i = 0; i < retStr.length; i++) {
       if (retStr[i] === "^") {
         start = i; // index of ^
-        if (retStr[i + 1] === "(")
-          // Does the exponent have brackets?
-          brackets = true;
+        // Does the exponent have brackets?
+        if (retStr[i + 1] === "(") brackets = true;
         i++; // once we've found ^ we can skip to next index immediately!
       }
       // if the exponent has brackets keep a count of the brackets
