@@ -2,12 +2,18 @@
   box-sizing: border-box;
 }
 
+body {
+  background-color: #2f3945;
+}
+
 #calculator {
   width: 470px;
   margin: auto;
-  border: 1px solid grey;
+  border: 1px solid rgb(160, 159, 159);
   padding: 10px;
   border-radius: 5px;
+  background-color: #ebebeb;
+  box-shadow: black 5px 5px;
 }
 
 #button-container {
@@ -44,12 +50,44 @@
   grid-template-columns: repeat(4, 1fr);
 }
 
+.calc-button {
+  margin: 2px;
+  border-radius: 4px;
+  background: #E5E9F0;
+  font-weight: 600;
+  background: linear-gradient(white 0%, #e6e6e6 100%);
+}
+
+#adv-calc-keys .calc-button, #l-bracket, #r-bracket, #clear, #clear-ele, #divide, #multiply, #subtract, #add
+{
+  background: linear-gradient(rgb(240, 240, 240) 0%, rgb(179, 183, 190) 100%);
+}
+
+#equals {
+  background: linear-gradient(#a0c2f6 0%, #74a7fa 100%);
+}
+
+#deg-rad-area {
+  grid-area: deg-rad-area;
+  display: flex;
+  justify-content: center;
+}
+
 #history-button-area {
   grid-area: history;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
   position: relative;
+}
+
+#history-button {
+  width: 90%;
+  margin-bottom: 3px;
+  border-radius: 5px;
+  font-size: 1.3rem;
+  border: grey solid 1px;
+  background: linear-gradient(white 0%, #e6e6e6 100%);
 }
 
 #history {
@@ -57,19 +95,26 @@
   flex-direction: column-reverse;
   justify-content: flex-end;
   width: 500px;
-  height: 250px;
+  height: 265px;
   border: 1px solid black;
   border-radius: 5px;
   position: absolute;
-  top: -240px;
-  left: -30px;
+  top: -185px;
+  left: -26px;
   background-color: white;
   overflow-y: auto;
+  box-shadow: 2px 2px rgba(0,0,0,0.5);
+  padding: 4px;
+}
+
+.history-item p {
+  margin: 3px 0;;
 }
 
 .history-item {
   display: flex;
   justify-content: space-between;
+  margin: 0;
 }
 
 .history-item p {
@@ -81,15 +126,40 @@
   cursor: pointer;
 }
 
+@media(max-width: 470px) {
+  #calculator {
+    width: 320px;
+  }
+
+  #button-container {
+    height: 600px;
+    grid-template-areas:
+      "basic-calc-keys"
+      "."
+      "adv-calc-keys"
+      "history";
+      grid-template-rows: 50% 10% 30% 10%;
+      grid-template-columns: 1fr;
+  }
+
+  #history {
+    width: 320px;
+    top: -250px;
+    left: -11px;
+  }
+}
+
 #display {
   display: flex;
   flex-direction: column;
   height: 80px;
-  border: 1px solid black;
+  border: 1px solid rgb(160, 159, 159);
   overflow: hidden;
   white-space: nowrap;
   margin-bottom: 10px;
   border-radius: 5px;
+  padding-right: 5px;
+  background-color: white;
 }
 
 #top-display {
@@ -169,6 +239,10 @@
 
 #zero {
   grid-area: zero;
+}
+
+#equals, #divide, #multiply, #subtract, #add, #decimal {
+  font-size: 1.2rem;
 }
 
 #equals {

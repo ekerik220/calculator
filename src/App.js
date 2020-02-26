@@ -611,7 +611,7 @@ class Calculator extends React.Component {
                 })}
               </div>
             )}
-            <button onClick={this.toggleHistory}>History</button>
+            <button id="history-button" onClick={this.toggleHistory}>History</button>
           </div>
         </div>
       </div>
