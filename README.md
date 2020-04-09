@@ -14,4 +14,4 @@ The calculator also has a history function for quick access to your history of e
 
 ## Live link
 
---
+https://ekerik220.github.io/calculator/
